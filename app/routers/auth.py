@@ -18,6 +18,9 @@ from ..schemas import LoginRequest, RefreshRequest, RegisterRequest
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+# Tracks used refresh token JTIs so they cannot be replayed.
+_used_refresh_tokens: set[str] = set()
+
 
 @router.post("/register", status_code=201)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
@@ -42,7 +45,8 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     #         "role": existing.role,
     #     }
     if existing is not None:
-        raise AppError(409, "USERNAME_TAKEN", "Username already taken")
+        # BUG: was returning existing user silently — spec says 409 USERNAME_TAKEN
+        raise AppError(409, "USERNAME_TAKEN", "Username already taken in this organization")
 
     user = User(
         org_id=org.id,
@@ -85,6 +89,11 @@ def refresh(payload: RefreshRequest, db: Session = Depends(get_db)):
     data = decode_token(payload.refresh_token)
     if data.get("type") != "refresh":
         raise AppError(401, "UNAUTHORIZED", "Wrong token type")
+    # BUG FIX: reject reused refresh tokens
+    jti = data.get("jti")
+    if jti in _used_refresh_tokens:
+        raise AppError(401, "UNAUTHORIZED", "Refresh token has already been used")
+    _used_refresh_tokens.add(jti)
     user = db.query(User).filter(User.id == int(data["sub"])).first()
     if user is None:
         raise AppError(401, "UNAUTHORIZED", "Unknown user")

@@ -178,7 +178,8 @@ def get_booking(
         raise AppError(404, "BOOKING_NOT_FOUND", "Booking not found")
 
     response = serialize_booking(booking)
-    response["start_time"] = iso_utc(booking.created_at)
+    # response["start_time"] = iso_utc(booking.created_at)  # BUG: was overwriting with created_at
+    response["start_time"] = iso_utc(booking.start_time)
     response["refunds"] = [
         {
             "amount_cents": r.amount_cents,
@@ -212,15 +213,28 @@ def cancel_booking(
 
     now = datetime.utcnow()
     notice = booking.start_time - now
-    notice_hours = int(notice.total_seconds() // 3600)
-    if notice_hours > 48:
+    # --- bug  ---
+    # notice_hours = int(notice.total_seconds() // 3600)
+    # if notice_hours > 48:
+    #     refund_percent = 100
+    # elif notice >= timedelta(hours=24):
+    #     refund_percent = 50
+    # else:
+    #     refund_percent = 50
+    # refund_amount_cents = round(booking.price_cents * (refund_percent / 100.0))
+    # --- FIX ---
+    if notice >= timedelta(hours=48):
         refund_percent = 100
     elif notice >= timedelta(hours=24):
         refund_percent = 50
     else:
-        refund_percent = 50
+        refund_percent = 0
 
-    refund_amount_cents = round(booking.price_cents * (refund_percent / 100.0))
+    from decimal import Decimal, ROUND_HALF_UP
+    refund_amount_cents = int(
+        Decimal(str(booking.price_cents * refund_percent / 100))
+        .to_integral_value(rounding=ROUND_HALF_UP)
+    )
 
     log_refund(db, booking, refund_percent)
 
