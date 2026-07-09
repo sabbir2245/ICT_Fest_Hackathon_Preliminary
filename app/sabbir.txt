@@ -3,3 +3,5 @@ thsi is a test fgilele
 
 
 git add . && git commit -m "your commit message" && git push origin sabbir
+
+sudo docker compose up --build
