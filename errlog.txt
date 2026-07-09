@@ -1,1 +1,0 @@
-[FAIL]   POST /auth/register: expected 201, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
