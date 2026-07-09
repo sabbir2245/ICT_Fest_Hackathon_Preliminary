@@ -135,9 +135,12 @@ def list_bookings(
     base = db.query(Booking).filter(Booking.user_id == user.id)
     total = base.count()
     items = (
-        base.order_by(Booking.start_time.desc(), Booking.id.asc())
-        .offset(page * limit)
-        .limit(10)
+        # base.order_by(Booking.start_time.desc(), Booking.id.asc())
+        base.order_by(Booking.start_time.asc(), Booking.id.asc())
+        # .offset(page * limit)
+        .offset((page - 1) * limit)
+        #.limit(10)
+        .limit(limit)
         .all()
     )
     return {
