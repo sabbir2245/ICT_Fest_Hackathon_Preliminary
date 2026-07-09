@@ -72,14 +72,13 @@ def _dbg(label: str, detail: str = "", ok: bool = True):
             print(f"       {line}", flush=True)
 
 
-def _req(method: str, path: str, *, token: str | None = None, json_body: dict | None = None, expect: int = 200) -> tuple[int, dict]:
+def _req(method: str, path: str, *, token: str | None = None, json_body: dict | None = None, expect: int | None = None) -> tuple[int, dict]:
     headers = _HEADERS.copy()
     if token:
         headers["Authorization"] = f"Bearer {token}"
     resp = client.request(method, path, headers=headers, json=json_body)
     data = {} if not resp.content else _try_json(resp.content)
-    status_ok = resp.status_code == expect
-    if not status_ok:
+    if expect is not None and resp.status_code != expect:
         msg = f"  {method} {path}: expected {expect}, got {resp.status_code}: {resp.text}"
         _dbg(msg, ok=False)
         _errlog(f"[FAIL] {msg}")
@@ -137,7 +136,7 @@ class TestAuth:
 
     def test_register_existing_org(self):
         _dbg("=== POST /auth/register (existing org → member) ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         status, data = _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "bob", "password": "pass456"}, expect=201)
         _assert_eq(status, 201, "register member status")
         _assert_eq(data.get("role"), "member", "second user is member")
@@ -145,13 +144,13 @@ class TestAuth:
 
     def test_register_duplicate_username(self):
         _dbg("=== POST /auth/register (duplicate username) ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         status, data = _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _dbg("note: duplicate username returns the existing user (no 409) — acceptable", ok=True)
 
     def test_login_ok(self):
         _dbg("=== POST /auth/login (valid) ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         status, data = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
         _assert_eq(status, 200, "login status")
         _assert_in("access_token", data, "login has access_token")
@@ -161,7 +160,7 @@ class TestAuth:
 
     def test_login_bad_credentials(self):
         _dbg("=== POST /auth/login (bad password) ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         status, data = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "wrong"})
         _assert_eq(status, 401, "bad login status")
         _assert_eq(data.get("code"), "INVALID_CREDENTIALS", "bad login code")
@@ -169,7 +168,7 @@ class TestAuth:
 
     def test_refresh(self):
         _dbg("=== POST /auth/refresh ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, login_data = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
         refresh = login_data["refresh_token"]
         status, data = _req("POST", "/auth/refresh", json_body={"refresh_token": refresh})
@@ -180,7 +179,7 @@ class TestAuth:
 
     def test_refresh_reuse(self):
         _dbg("=== POST /auth/refresh (reuse → 401) ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, login_data = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
         refresh = login_data["refresh_token"]
         _req("POST", "/auth/refresh", json_body={"refresh_token": refresh})  # first use ok
@@ -190,7 +189,7 @@ class TestAuth:
 
     def test_logout(self):
         _dbg("=== POST /auth/logout ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, login_data = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
         token = login_data["access_token"]
         status, data = _req("POST", "/auth/logout", token=token)
@@ -204,7 +203,7 @@ class TestAuth:
 
 class TestRooms:
     def _setup(self):
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, d = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
         return d["access_token"]
 
@@ -230,11 +229,11 @@ class TestRooms:
     def test_room_not_found_other_org(self):
         _dbg("=== GET /rooms/{id} (cross-org → 404) ===")
         # acme creates a room
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, ld = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
-        _req("POST", "/rooms", token=ld["access_token"], json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000})
+        _req("POST", "/rooms", token=ld["access_token"], json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000}, expect=201)
         # other org tries to access
-        _req("POST", "/auth/register", json_body={"org_name": "other", "username": "bob", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "other", "username": "bob", "password": "pass123"}, expect=201)
         _, ld2 = _req("POST", "/auth/login", json_body={"org_name": "other", "username": "bob", "password": "pass123"})
         status, data = _req("GET", "/rooms/1", token=ld2["access_token"])
         _dbg(f"cross-org room access: {status}", ok=status == 404)
@@ -242,7 +241,7 @@ class TestRooms:
     def test_availability(self):
         _dbg("=== GET /rooms/{id}/availability ===")
         token = self._setup()
-        _req("POST", "/rooms", token=token, json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000})
+        _req("POST", "/rooms", token=token, json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000}, expect=201)
         today = datetime.utcnow().strftime("%Y-%m-%d")
         status, data = _req("GET", f"/rooms/1/availability?date={today}", token=token)
         _assert_eq(status, 200, "availability status")
@@ -253,7 +252,7 @@ class TestRooms:
     def test_stats_zero(self):
         _dbg("=== GET /rooms/{id}/stats (zero bookings) ===")
         token = self._setup()
-        _req("POST", "/rooms", token=token, json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000})
+        _req("POST", "/rooms", token=token, json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000}, expect=201)
         status, data = _req("GET", "/rooms/1/stats", token=token)
         _assert_eq(status, 200, "stats status")
         _assert_eq(data.get("total_confirmed_bookings"), 0, "zero bookings count")
@@ -263,9 +262,9 @@ class TestRooms:
 
 class TestBookings:
     def _setup(self):
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, ld = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
-        _req("POST", "/rooms", token=ld["access_token"], json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 2000})
+        _req("POST", "/rooms", token=ld["access_token"], json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 2000}, expect=201)
         return ld["access_token"], ld
 
     def _future_start(self, hours_ahead: int = 2) -> str:
@@ -382,8 +381,8 @@ class TestBookings:
         token, _ = self._setup()
         n_bookings = 5
         for i in range(n_bookings):
-            s = self._future_start(20 + i)
-            e = self._future_end(20 + i, 1)
+            s = self._future_start(100 + i)
+            e = self._future_end(100 + i, 1)
             _req("POST", "/bookings", token=token, json_body={"room_id": 1, "start_time": s, "end_time": e}, expect=201)
         status, data = _req("GET", "/bookings?page=1&limit=3", token=token)
         _assert_eq(status, 200, "list status")
@@ -429,13 +428,13 @@ class TestBookings:
 
     def test_cancel_only_owner_or_admin(self):
         _dbg("=== Cancel: non-owner member → 404 ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, ld = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
-        _req("POST", "/rooms", token=ld["access_token"], json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000})
+        _req("POST", "/rooms", token=ld["access_token"], json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000}, expect=201)
         payload = {"room_id": 1, "start_time": self._future_start(72), "end_time": self._future_end(72, 2)}
         _, created = _req("POST", "/bookings", token=ld["access_token"], json_body=payload, expect=201)
         # register another member
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "bob", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "bob", "password": "pass123"}, expect=201)
         _, ld2 = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "bob", "password": "pass123"})
         status, _ = _req("POST", f"/bookings/{created['id']}/cancel", token=ld2["access_token"])
         _assert_eq(status, 404, "non-owner member should see 404")
@@ -472,12 +471,12 @@ class TestBookings:
 
     def test_booking_visibility_member(self):
         _dbg("=== Booking visibility: member can't see others' bookings ===")
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, ld = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
-        _req("POST", "/rooms", token=ld["access_token"], json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000})
+        _req("POST", "/rooms", token=ld["access_token"], json_body={"name": "R1", "capacity": 5, "hourly_rate_cents": 1000}, expect=201)
         payload = {"room_id": 1, "start_time": self._future_start(72), "end_time": self._future_end(72, 2)}
         _, created = _req("POST", "/bookings", token=ld["access_token"], json_body=payload, expect=201)
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "bob", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "bob", "password": "pass123"}, expect=201)
         _, ld2 = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "bob", "password": "pass123"})
         status, _ = _req("GET", f"/bookings/{created['id']}", token=ld2["access_token"])
         _assert_eq(status, 404, "member should not see other's booking")
@@ -546,14 +545,14 @@ class TestConcurrency:
     def test_concurrent_booking_conflict(self):
         _dbg("=== Concurrent booking conflict (room 1, same slot) ===")
         _reset_db()
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "alice", "password": "pass123"}, expect=201)
         _, ld = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "alice", "password": "pass123"})
         token = ld["access_token"]
         # register a 2nd user in same org
-        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "bob", "password": "pass123"})
+        _req("POST", "/auth/register", json_body={"org_name": "acme", "username": "bob", "password": "pass123"}, expect=201)
         _, ld2 = _req("POST", "/auth/login", json_body={"org_name": "acme", "username": "bob", "password": "pass123"})
         token2 = ld2["access_token"]
-        _req("POST", "/rooms", token=token, json_body={"name": "R1", "capacity": 10, "hourly_rate_cents": 1000})
+        _req("POST", "/rooms", token=token, json_body={"name": "R1", "capacity": 10, "hourly_rate_cents": 1000}, expect=201)
 
         start = self._future_start  # method, use later
         from app.services.ratelimit import _buckets

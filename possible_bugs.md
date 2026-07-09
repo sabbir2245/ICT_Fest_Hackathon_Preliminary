@@ -148,9 +148,13 @@ An input like `2026-07-09T10:00:00+05:00` is stored as 10:00 UTC instead of 05:0
 
 `_has_conflict` reads all confirmed bookings without `FOR UPDATE`, then `time.sleep(0.12)`, then the insert commits separately. Multiple concurrent requests can all pass the conflict check. Observed: all 10 concurrent threads for the same slot succeeded (test: expected 1, got 10).
 
-**Fix:** Added `.with_for_update()` to the conflict query at `bookings.py:46` so the SELECT locks rows until commit. Also commented out the artificial `_pricing_warmup()` sleep that widened the race window.
+**Fix:** Two layers of protection:
+1. A `threading.Lock()` (`_create_booking_lock`) wraps the critical section (validation → conflict check → quota check → insert → commit) in `create_booking`. This works even with SQLite, which ignores `FOR UPDATE`.
+2. `.with_for_update()` on the Room query at `bookings.py:106` locks the room row in PostgreSQL for production safety.
 
-**Status: FIXED** — `app/routers/bookings.py:46`
+Also removed `.with_for_update()` from `_has_conflict` (was locking empty result sets) and commented out the artificial `_pricing_warmup()` sleep.
+
+**Status: FIXED** — `app/routers/bookings.py:22,89-128`
 
 ---
 
