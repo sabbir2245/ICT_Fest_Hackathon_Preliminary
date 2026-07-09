@@ -467,8 +467,8 @@ class TestBookings:
         payload = {"room_id": 1, "start_time": self._future_start(12), "end_time": self._future_end(12, 2)}
         _, created = _req("POST", "/bookings", token=token, json_body=payload, expect=201)
         _, data = _req("POST", f"/bookings/{created['id']}/cancel", token=token)
-        _assert_eq(data.get("refund_percent"), 50, "BUG: < 24h should be 0% but code gives 50%")
-        _dbg(f"NOTE: < 24h notice gives {data['refund_percent']}% (BUG: should be 0%)")
+        _assert_eq(data.get("refund_percent"), 0, "< 24h → 0% refund")
+        _dbg(f"0% refund for < 24h notice: {data['refund_amount_cents']} cents")
 
     def test_booking_visibility_member(self):
         _dbg("=== Booking visibility: member can't see others' bookings ===")
@@ -619,6 +619,7 @@ def _run_all():
         print(f"\n───── {label} ─────", flush=True)
         methods = [m for m in dir(instance) if m.startswith("test_")]
         for m_name in methods:
+            _reset_db()
             try:
                 getattr(instance, m_name)()
             except AssertionError as e:
@@ -629,7 +630,6 @@ def _run_all():
                 tb = traceback.format_exc()
                 _errlog(f"[ERROR] {label}.{m_name}: {e}")
                 _errlog(tb)
-        _reset_db()
 
     print("\n" + "=" * 60, flush=True)
     print("  All tests completed.", flush=True)

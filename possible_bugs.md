@@ -221,7 +221,7 @@ The code checks `duration_hours > MAX_DURATION_HOURS` but never checks `duration
 
 ---
 
-## 🆕 19. Reference code counter is not thread-safe — `app/services/reference.py:17-20`
+## 19. ✅ Reference code counter is not thread-safe — `app/services/reference.py:17-20`
 
 ```python
 def next_reference_code() -> str:
@@ -230,13 +230,15 @@ def next_reference_code() -> str:
     _counter["value"] = current + 1
     return f"CW-{current:06d}"
 ```
-The read-increment-write sequence is not atomic. Under concurrent booking creation, two threads can read the same `current`, then both write `current + 1`, producing duplicate reference codes. `_format_pause()` makes the race window trivial.
+The read-increment-write sequence is not atomic. Under concurrent booking creation, two threads can read the same `current`, then both write `current + 1`, producing duplicate reference codes. `_format_pause()` made the race window trivial.
 
-**Fix:** Use `threading.Lock` around the sequence, or use `itertools.count`.
+**Fix:** Added `_ref_lock = threading.Lock()` at line 9 and wrapped the read-increment-write-return in `with _ref_lock:`. Old racy code commented out.
+
+**Status: FIXED** — `app/services/reference.py:9,18-23`
 
 ---
 
-## 🆕 20. `stats.py` is not thread-safe — `app/services/stats.py:15-19`
+## 20. ✅ `stats.py` is not thread-safe — `app/services/stats.py:15-19`
 
 ```python
 def record_create(room_id: int, price_cents: int) -> None:
@@ -245,17 +247,21 @@ def record_create(room_id: int, price_cents: int) -> None:
     _aggregate_pause()
     _stats[room_id] = {"count": count + 1, "revenue": revenue + price_cents}
 ```
-The read-modify-write is racy. Two concurrent creates for the same room can both read `count=0`, then both write `count=1`, losing one booking.
+The read-modify-write is racy. Two concurrent creates for the same room can both read `count=0`, then both write `count=1`, losing one booking. Same bug in `record_cancel`.
 
-**Fix:** Use `threading.Lock`.
+**Fix:** Added `_stats_lock = threading.Lock()` at line 8 and wrapped `record_create` and `record_cancel` in `with _stats_lock:`. Old racy code in `record_create` commented out.
+
+**Status: FIXED** — `app/services/stats.py:8,22-30,33-37`
 
 ---
 
-## 🆕 21. `stats.get()` may be permanently inconsistent after a crash — `app/services/stats.py:29-30`
+## 21. ✅ `stats.get()` may be permanently inconsistent after a crash — `app/services/stats.py:29-30`
 
 `_stats` is entirely in-memory. If the server restarts, all stats reset to zero while the database still has bookings. The spec says: *"Room stats … always consistent with the bookings themselves."* A restart breaks this guarantee.
 
-**Fix:** Rebuild stats from the database on startup, or compute them from the DB on each request instead of using in-memory counters.
+**Fix:** Changed `stats.get()` to accept an optional `db` parameter. When `db` is provided (as it is from `rooms.py:110`), it queries the database directly using `COUNT` and `SUM` on confirmed bookings, guaranteed to be consistent. Falls back to in-memory stats if no `db` is passed (for other callers). Old in-memory-only code commented out.
+
+**Status: FIXED** — `app/services/stats.py:40-53`, `app/routers/rooms.py:112`
 
 ---
 
