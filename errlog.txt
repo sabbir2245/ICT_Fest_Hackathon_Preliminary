@@ -1,0 +1,337 @@
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /auth/login: expected 200, got 401: {"detail":"Invalid username or password","code":"INVALID_CREDENTIALS"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL] revoked token rejected: expected 401, got 200
+[FAIL] Auth.test_logout: revoked token rejected: expected 401, got 200
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 201, in test_logout
+    _assert_eq(status2, 401, "revoked token rejected")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: revoked token rejected: expected 401, got 200
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL] reused refresh should be 401: expected 401, got 200
+[FAIL] Auth.test_refresh_reuse: reused refresh should be 401: expected 401, got 200
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 188, in test_refresh_reuse
+    _assert_eq(status, 401, "reused refresh should be 401")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: reused refresh should be 401: expected 401, got 200
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL] empty rooms list: expected [], got [{'id': 1, 'org_id': 1, 'name': 'R1', 'capacity': 5, 'hourly_rate_cents': 1000}, {'id': 2, 'org_id': 1, 'name': 'Conference A', 'capacity': 10, 'hourly_rate_cents': 1500}]
+[FAIL] Rooms.test_list_rooms_empty: empty rooms list: expected [], got [{'id': 1, 'org_id': 1, 'name': 'R1', 'capacity': 5, 'hourly_rate_cents': 1000}, {'id': 2, 'org_id': 1, 'name': 'Conference A', 'capacity': 10, 'hourly_rate_cents': 1500}]
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 216, in test_list_rooms_empty
+    _assert_eq(data, [], "empty rooms list")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: empty rooms list: expected [], got [{'id': 1, 'org_id': 1, 'name': 'R1', 'capacity': 5, 'hourly_rate_cents': 1000}, {'id': 2, 'org_id': 1, 'name': 'Conference A', 'capacity': 10, 'hourly_rate_cents': 1500}]
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":3,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":2,"username":"bob","role":"admin"}
+[FAIL]   GET /rooms/1: expected 200, got 404: {"detail":"Not Found"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":4,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":2,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL] 1 room in report: expected 1, got 2
+[FAIL] Bookings.test_admin_usage_report: 1 room in report: expected 1, got 2
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 527, in test_admin_usage_report
+    _assert_eq(len(data["rooms"]), 1, "1 room in report")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: 1 room in report: expected 1, got 2
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":3,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL] back-to-back allowed: expected 201, got 409
+[FAIL] Bookings.test_back_to_back_allowed: back-to-back allowed: expected 201, got 409
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 360, in test_back_to_back_allowed
+    _assert_eq(status, 201, "back-to-back allowed")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: back-to-back allowed: expected 201, got 409
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":4,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 200, got 400: {"detail":"duration out of range","code":"INVALID_BOOKING_WINDOW"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":5,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 200, got 400: {"detail":"duration must be a whole number of hours","code":"INVALID_BOOKING_WINDOW"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":6,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 200, got 400: {"detail":"start_time must be in the future","code":"INVALID_BOOKING_WINDOW"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":7,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL] 3h * 2000 = 6000: expected 6000, got None
+[FAIL] Bookings.test_booking_price: 3h * 2000 = 6000: expected 6000, got None
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 297, in test_booking_price
+    _assert_eq(data.get("price_cents"), 6000, "3h * 2000 = 6000")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: 3h * 2000 = 6000: expected 6000, got None
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":8,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":1,"username":"bob","role":"member"}
+[FAIL] member should not see other's booking: expected 404, got 200
+[FAIL] Bookings.test_booking_visibility_member: member should not see other's booking: expected 404, got 200
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 483, in test_booking_visibility_member
+    _assert_eq(status, 404, "member should not see other's booking")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: member should not see other's booking: expected 404, got 200
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":9,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[ERROR] Bookings.test_cancel_already_cancelled: 'id'
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 425, in test_cancel_already_cancelled
+    _req("POST", f"/bookings/{created['id']}/cancel", token=token)
+                              ~~~~~~~^^^^^^
+KeyError: 'id'
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":10,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[ERROR] Bookings.test_cancel_booking: 'id'
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 415, in test_cancel_booking
+    status, data = _req("POST", f"/bookings/{created['id']}/cancel", token=token)
+                                             ~~~~~~~^^^^^^
+KeyError: 'id'
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":11,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":1,"username":"bob","role":"member"}
+[ERROR] Bookings.test_cancel_only_owner_or_admin: 'id'
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 440, in test_cancel_only_owner_or_admin
+    status, _ = _req("POST", f"/bookings/{created['id']}/cancel", token=ld2["access_token"])
+                                          ~~~~~~~^^^^^^
+KeyError: 'id'
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":12,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":13,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[ERROR] Bookings.test_cancel_refund_100pct: 'id'
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 449, in test_cancel_refund_100pct
+    _, data = _req("POST", f"/bookings/{created['id']}/cancel", token=token)
+                                        ~~~~~~~^^^^^^
+KeyError: 'id'
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":14,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":15,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL] create booking status: expected 201, got 409
+[FAIL] Bookings.test_create_booking: create booking status: expected 201, got 409
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 284, in test_create_booking
+    _assert_eq(status, 201, "create booking status")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: create booking status: expected 201, got 409
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":16,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[ERROR] Bookings.test_get_booking: 'id'
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 405, in test_get_booking
+    status, data = _req("GET", f"/bookings/{created['id']}", token=token)
+                                            ~~~~~~~^^^^^^
+KeyError: 'id'
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":17,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Booking quota exceeded","code":"QUOTA_EXCEEDED"}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Booking quota exceeded","code":"QUOTA_EXCEEDED"}
+[FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL] total should be 5: expected 5, got 6
+[FAIL] Bookings.test_list_bookings_pagination: total should be 5: expected 5, got 6
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 392, in test_list_bookings_pagination
+    _assert_eq(data["total"], n_bookings, f"total should be {n_bookings}")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: total should be 5: expected 5, got 6
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":18,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL]   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL] quota exceeded should 409: expected 409, got 429
+[FAIL] Bookings.test_quota_exceeded: quota exceeded should 409: expected 409, got 429
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 377, in test_quota_exceeded
+    _assert_eq(status, 409, "quota exceeded should 409")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: quota exceeded should 409: expected 409, got 429
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":19,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":7,"reference_code":"CW-001006","room_id":1,"user_id":1,"start_time":"2026-07-11T12:45:50+00:00","end_time":"2026-07-11T13:45:50+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:50.968355+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":8,"reference_code":"CW-001007","room_id":1,"user_id":1,"start_time":"2026-07-11T13:45:51+00:00","end_time":"2026-07-11T14:45:51+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:51.641888+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":9,"reference_code":"CW-001008","room_id":1,"user_id":1,"start_time":"2026-07-11T14:45:52+00:00","end_time":"2026-07-11T15:45:52+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:52.315689+00:00"}
+[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":10,"reference_code":"CW-001009","room_id":1,"user_id":1,"start_time":"2026-07-11T16:45:53+00:00","end_time":"2026-07-11T17:45:53+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:53.215153+00:00"}
+[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":11,"reference_code":"CW-001010","room_id":1,"user_id":1,"start_time":"2026-07-11T18:45:54+00:00","end_time":"2026-07-11T19:45:54+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:54.113740+00:00"}
+[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":12,"reference_code":"CW-001011","room_id":1,"user_id":1,"start_time":"2026-07-11T20:45:54+00:00","end_time":"2026-07-11T21:45:54+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:55.013920+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":13,"reference_code":"CW-001012","room_id":1,"user_id":1,"start_time":"2026-07-11T21:45:55+00:00","end_time":"2026-07-11T22:45:55+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:55.688900+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":14,"reference_code":"CW-001013","room_id":1,"user_id":1,"start_time":"2026-07-11T22:45:56+00:00","end_time":"2026-07-11T23:45:56+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:56.363184+00:00"}
+[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":15,"reference_code":"CW-001014","room_id":1,"user_id":1,"start_time":"2026-07-12T00:45:57+00:00","end_time":"2026-07-12T01:45:57+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:57.262363+00:00"}
+[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":16,"reference_code":"CW-001015","room_id":1,"user_id":1,"start_time":"2026-07-12T02:45:58+00:00","end_time":"2026-07-12T03:45:58+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:58.161332+00:00"}
+[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":17,"reference_code":"CW-001016","room_id":1,"user_id":1,"start_time":"2026-07-12T04:45:58+00:00","end_time":"2026-07-12T05:45:58+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:59.059729+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":18,"reference_code":"CW-001017","room_id":1,"user_id":1,"start_time":"2026-07-12T05:45:59+00:00","end_time":"2026-07-12T06:45:59+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:59.733855+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":19,"reference_code":"CW-001018","room_id":1,"user_id":1,"start_time":"2026-07-12T06:46:00+00:00","end_time":"2026-07-12T07:46:00+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:46:00.407949+00:00"}
+[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":20,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[ERROR] Bookings.test_reference_code_unique: 'reference_code'
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 515, in test_reference_code_unique
+    codes.add(data["reference_code"])
+              ~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'reference_code'
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":21,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+[FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL]   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+[FAIL] conflict should 409: expected 409, got 429
+[FAIL] Bookings.test_room_conflict: conflict should 409: expected 409, got 429
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 343, in test_room_conflict
+    _assert_eq(status, 409, "conflict should 409")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: conflict should 409: expected 409, got 429
+
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":1,"username":"bob","role":"member"}
+[FAIL]   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":10,"hourly_rate_cents":1000}
+[FAIL] only 1 booking should succeed for same slot: expected 1, got 10
+[FAIL] Concurrency.test_concurrent_booking_conflict: only 1 booking should succeed for same slot: expected 1, got 10
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 588, in test_concurrent_booking_conflict
+    _assert_eq(success, 1, "only 1 booking should succeed for same slot")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
+    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
+           ^^^^^^^^^^^^^^^
+AssertionError: only 1 booking should succeed for same slot: expected 1, got 10
+

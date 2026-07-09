@@ -1,0 +1,235 @@
+# Verified Bugs (cross-checked against source code & PDF spec)
+
+> ✅ = confirmed bug | ❌ = not a bug (removed) | ⚠️ = refined/merged
+
+---
+
+## 1. ✅ Token revocation checks `sub` instead of `jti` — `app/auth.py:97`
+
+`revoke_access_token()` (line 86) stores `payload["jti"]` (unique per-token UUID hex) into `_revoked_tokens`. But `get_token_payload()` (line 97) checks `payload.get("sub")` (the user ID string, e.g. `"1"`). Since a user ID is never in `_revoked_tokens`, no token ever appears revoked — logout is ineffective.
+
+**Fix:** `if payload.get("jti") in _revoked_tokens`
+
+---
+
+## 2. ✅ Refresh tokens are never invalidated — `app/routers/auth.py:81-93`
+
+`POST /auth/refresh` returns a new token pair but does not track or invalidate the presented refresh token. The spec says: *"Refresh tokens are single-use: refreshing returns a new access and refresh token and invalidates the presented refresh token (reuse → 401)."* Reusing a refresh token currently succeeds (observed in test: expected 401, got 200).
+
+**Fix:** Store used refresh-token JTIs and reject on reuse (similar to the access-token revocation set).
+
+---
+
+## 3. ✅ Back-to-back bookings incorrectly conflict — `app/routers/bookings.py:50`
+
+Overlap check uses non-strict `<=`:
+```python
+if b.start_time <= end and start <= b.end_time:
+```
+The spec says: *"Two confirmed bookings for the same room overlap iff existing.start < new.end AND new.start < existing.end"* — strict `<` for both sides. Back-to-back bookings (end of first == start of second) must be allowed.
+
+**Fix:** `b.start_time < end and start < b.end_time`
+
+---
+
+## 4. ✅ Cancel refund logic is wrong in multiple ways — `app/routers/bookings.py:199-206`
+
+**4a.** The `else` branch (< 24h) sets `refund_percent = 50` instead of `0`. The spec says: *"notice < 24 hours → 0% refund"*.
+
+**4b.** The 48h boundary uses `notice_hours > 48` (floored hours) instead of `notice >= timedelta(hours=48)`. With 48.5 hours notice: `notice_hours = int(48.5 // 1) = 48`, `48 > 48` is False → falls to 50% tier. Spec says ≥ 48h → 100%.
+
+**4c.** `refund_amount_cents` at line 208 uses `round()` which does banker's rounding (half-to-even). Spec says: *"half-cents rounding up"*. So `round(2.5)` = 2 but spec requires 3.
+
+**4d.** The refund amount stored in `RefundLog` (`app/services/refunds.py:17`) uses `int(...)` (truncation), while the cancel response uses `round(...)` (line 208). These can differ for fractional cents. Spec says: *"the amount returned by the cancel response must equal the amount stored in the RefundLog"*.
+
+**Fix:** Use `Decimal` with `ROUND_HALF_UP` consistently in both places:
+```python
+if notice >= timedelta(hours=48):
+    refund_percent = 100
+elif notice >= timedelta(hours=24):
+    refund_percent = 50
+else:
+    refund_percent = 0
+```
+And ensure both `log_refund` and the cancel response compute the same amount using the same rounding.
+
+---
+
+## 5. ✅ GET /bookings/{id} doesn't enforce member-only-own visibility — `app/routers/bookings.py:156-161`
+
+The query filters by `Room.org_id == user.org_id` only. A member can see any booking in their org. Spec rule 10: *"Members may read and cancel only their own bookings (another member's booking id → 404 BOOKING NOT FOUND)."*
+
+**Fix:** For non-admin users, add `Booking.user_id == user.id` filter. The cancel endpoint (line 192) already has this check — apply the same pattern.
+
+---
+
+## 6. ✅ GET /bookings/{id} returns `created_at` as `start_time` — `app/routers/bookings.py:166`
+
+Line 166 overwrites the correct `start_time` from `serialize_booking()` with `iso_utc(booking.created_at)`:
+```python
+response["start_time"] = iso_utc(booking.created_at)  # BUG
+```
+The response field shows the creation timestamp instead of the actual booking start time.
+
+**Fix:** `response["start_time"] = iso_utc(booking.start_time)` (or simply don't overwrite — `serialize_booking` already sets it correctly).
+
+---
+
+## 7. ✅ Booking listing sorts descending instead of ascending — `app/routers/bookings.py:137`
+
+```python
+base.order_by(Booking.start_time.desc(), Booking.id.asc())
+```
+Spec rule 11: *"Items are the caller's own bookings sorted ascending by start time (ties by ascending id)."*
+
+**Fix:** `Booking.start_time.asc()`
+
+---
+
+## 8. ✅ Booking listing offset is `page * limit` instead of `(page-1) * limit` — `app/routers/bookings.py:138`
+
+```python
+.offset(page * limit)
+```
+With page=1, limit=10 → offset=10, skipping the first 10 items. Should be `(page - 1) * limit` so page 1 starts at offset 0.
+
+---
+
+## 9. ✅ Booking listing hard-codes `limit=10` — `app/routers/bookings.py:139`
+
+```python
+.limit(10)
+```
+Ignores the user-provided `limit` parameter (default 10, max 100). Should be `.limit(limit)`.
+
+---
+
+## 10. ✅ Access token lifetime is 15 hours instead of 900 seconds — `app/auth.py:50`
+
+```python
+lifetime = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+```
+`ACCESS_TOKEN_EXPIRE_MINUTES = 15` → `timedelta(minutes=900)` = 15 hours. Spec says *"Access tokens expire in exactly 900 seconds"* (15 minutes).
+
+**Fix:** `timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)` (no `* 60`), or change the config constant.
+
+---
+
+## 11. ✅ Timezone offset not converted to UTC before storage — `app/timeutils.py:11-14`
+
+```python
+dt = datetime.fromisoformat(value)
+if dt.tzinfo is not None:
+    dt = dt.replace(tzinfo=None)  # strips offset, does NOT convert
+return dt
+```
+An input like `2026-07-09T10:00:00+05:00` is stored as 10:00 UTC instead of 05:00 UTC. The spec says: *"Input datetimes carrying a UTC offset must be converted to UTC before storage or comparison."*
+
+**Fix:** `dt = dt.astimezone(timezone.utc).replace(tzinfo=None)`
+
+---
+
+## 12. ✅ No concurrency protection for booking creation — `app/routers/bookings.py:42-52,100-118`
+
+`_has_conflict` reads all confirmed bookings without `FOR UPDATE`, then `time.sleep(0.12)`, then the insert commits separately. Multiple concurrent requests can all pass the conflict check. Observed: all 10 concurrent threads for the same slot succeeded (test: expected 1, got 10).
+
+**Fix:** Use `with_for_update()` on the conflict query and ensure the conflict check + insert are in the same transaction.
+
+---
+
+## 13. ⚠️ Artificial `time.sleep` calls widen race windows — multiple files
+
+These calls appear in `_pricing_warmup()` (0.12s), `_quota_audit()` (0.1s), `_settlement_pause()` (0.12s), `_format_pause()` (0.12s), `_aggregate_pause()` (0.1s), and `_settle_pause()` (0.1s). They deliberately slow down request processing, making race conditions easier to trigger. Removing them doesn't fix the concurrency bugs but reduces the window. Not a standalone bug — a contributing factor to bugs 12 and 14.
+
+---
+
+## 14. ✅ Rate limiter has no lock protection — `app/services/ratelimit.py:19-25`
+
+No mutex/lock on `_buckets`. Two concurrent requests from the same user can both execute `_buckets.get()`, see `len(bucket) < 20`, both append, and both pass — exceeding the 20-request limit. The comment about "compact under sustained load" with the sleep makes the race window predictable.
+
+**Fix:** Use `threading.Lock` around the read-trim-append-check sequence.
+
+---
+
+## 🆕 15. Duplicate username returns 201 instead of 409 — `app/routers/auth.py:37-43`
+
+When `existing` user is found (same org + same username), the code returns `{user_id, org_id, username, role}` with default status 201. The spec says: *"A duplicate username within the org → 409 USERNAME TAKEN."*
+
+**Fix:** `raise AppError(409, "USERNAME_TAKEN", "Username already taken in this organization")`
+
+---
+
+## 🆕 16. Export `fetch_bookings_raw` bypasses org scoping — `app/services/export.py:22-29`
+
+```python
+def fetch_bookings_raw(db: Session, room_id: int) -> list[Booking]:
+    return db.query(Booking).filter(Booking.room_id == room_id).all()
+```
+This has NO `Room.org_id` join/filter. An admin from org A who knows a room_id from org B can export that room's bookings — a multi-tenancy violation. Called from `generate_export` (line 50) when `include_all=True` and `room_id` is set.
+
+**Fix:** Add a join + org filter, or remove `fetch_bookings_raw` and use `_fetch_scoped` with `org_id`.
+
+---
+
+## 🆕 17. 5-minute grace window for past start times — `app/routers/bookings.py:86`
+
+```python
+if start <= now - timedelta(seconds=300):
+```
+This rejects only if start is 5+ minutes in the past. A start time 1 minute ago passes. The spec says: *"start time must be strictly in the future at request time — no grace window."*
+
+**Fix:** `if start <= now:`
+
+---
+
+## 🆕 18. No min-duration check — `app/routers/bookings.py:89-94`
+
+The code checks `duration_hours > MAX_DURATION_HOURS` but never checks `duration_hours < MIN_DURATION_HOURS` (1). A booking with 0 duration (or negative) passes these checks. The spec says: *"Duration must be a whole number of hours, minimum 1, maximum 8."*
+
+**Fix:** Add `if duration_hours < MIN_DURATION_HOURS: raise AppError(400, ...)`
+
+---
+
+## 🆕 19. Reference code counter is not thread-safe — `app/services/reference.py:17-20`
+
+```python
+def next_reference_code() -> str:
+    current = _counter["value"]
+    _format_pause()
+    _counter["value"] = current + 1
+    return f"CW-{current:06d}"
+```
+The read-increment-write sequence is not atomic. Under concurrent booking creation, two threads can read the same `current`, then both write `current + 1`, producing duplicate reference codes. `_format_pause()` makes the race window trivial.
+
+**Fix:** Use `threading.Lock` around the sequence, or use `itertools.count`.
+
+---
+
+## 🆕 20. `stats.py` is not thread-safe — `app/services/stats.py:15-19`
+
+```python
+def record_create(room_id: int, price_cents: int) -> None:
+    current = _stats.get(room_id, {"count": 0, "revenue": 0})
+    count, revenue = current["count"], current["revenue"]
+    _aggregate_pause()
+    _stats[room_id] = {"count": count + 1, "revenue": revenue + price_cents}
+```
+The read-modify-write is racy. Two concurrent creates for the same room can both read `count=0`, then both write `count=1`, losing one booking.
+
+**Fix:** Use `threading.Lock`.
+
+---
+
+## 🆕 21. `stats.get()` may be permanently inconsistent after a crash — `app/services/stats.py:29-30`
+
+`_stats` is entirely in-memory. If the server restarts, all stats reset to zero while the database still has bookings. The spec says: *"Room stats … always consistent with the bookings themselves."* A restart breaks this guarantee.
+
+**Fix:** Rebuild stats from the database on startup, or compute them from the DB on each request instead of using in-memory counters.
+
+---
+
+## ❌ Items removed from original list
+
+| # | Claim | Verdict | Reason |
+|---|-------|---------|--------|
+| 13 | `time.sleep` calls as standalone bug | Removed → merged | These are contributing factors to bugs 12/14, not bugs themselves |
