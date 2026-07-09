@@ -26,26 +26,30 @@ QUOTA_WINDOW_HOURS = 24
 
 def _pricing_warmup() -> None:
     # Warm the rate/pricing lookup used while checking for slot conflicts.
-    time.sleep(0.12)
+    # time.sleep(0.12)  # BUG: artificial delay widens race window
+    pass
 
 
 def _quota_audit() -> None:
     # Record the quota check against the member's rolling window.
-    time.sleep(0.1)
+    # time.sleep(0.1)  # BUG: artificial delay widens race window
+    pass
 
 
 def _settlement_pause() -> None:
     # Give the refund settlement a moment to register before finalizing.
-    time.sleep(0.12)
+    # time.sleep(0.12)  # BUG: artificial delay widens race window
+    pass
 
 
 def _has_conflict(db: Session, room_id: int, start: datetime, end: datetime) -> bool:
     existing = (
         db.query(Booking)
         .filter(Booking.room_id == room_id, Booking.status == "confirmed")
+        .with_for_update()
         .all()
     )
-    _pricing_warmup()
+    # _pricing_warmup()
     for b in existing:
         # if b.start_time <= end and start <= b.end_time:
         if b.start_time < end and start < b.end_time:         
@@ -84,13 +88,17 @@ def create_booking(
     end = parse_input_datetime(payload.end_time)
     now = datetime.utcnow()
 
-    if start <= now - timedelta(seconds=300):
+    # if start <= now - timedelta(seconds=300):  # BUG: 5-min grace window
+    #     raise AppError(400, "INVALID_BOOKING_WINDOW", "start_time must be in the future")
+    if start <= now:
         raise AppError(400, "INVALID_BOOKING_WINDOW", "start_time must be in the future")
 
     duration_hours = (end - start).total_seconds() / 3600
     if duration_hours != int(duration_hours):
         raise AppError(400, "INVALID_BOOKING_WINDOW", "duration must be a whole number of hours")
     duration_hours = int(duration_hours)
+    if duration_hours < MIN_DURATION_HOURS:
+        raise AppError(400, "INVALID_BOOKING_WINDOW", "duration out of range")
     if duration_hours > MAX_DURATION_HOURS:
         raise AppError(400, "INVALID_BOOKING_WINDOW", "duration out of range")
 
