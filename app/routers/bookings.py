@@ -154,12 +154,23 @@ def get_booking(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    booking = (
-        db.query(Booking)
-        .join(Room, Booking.room_id == Room.id)
-        .filter(Booking.id == booking_id, Room.org_id == user.org_id)
-        .first()
+    # booking = (
+    #     db.query(Booking)
+    #     .join(Room, Booking.room_id == Room.id)
+    #     .filter(Booking.id == booking_id, Room.org_id == user.org_id)
+    #     .first()
+    # )
+    query = (
+    db.query(Booking)
+    .join(Room, Booking.room_id == Room.id)
+    .filter(Booking.id == booking_id, Room.org_id == user.org_id)
     )
+
+    if user.role != "admin":
+        query = query.filter(Booking.user_id == user.id)
+
+    booking = query.first()
+    
     if booking is None:
         raise AppError(404, "BOOKING_NOT_FOUND", "Booking not found")
 
