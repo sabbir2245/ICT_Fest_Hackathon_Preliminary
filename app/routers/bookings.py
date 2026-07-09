@@ -47,7 +47,8 @@ def _has_conflict(db: Session, room_id: int, start: datetime, end: datetime) -> 
     )
     _pricing_warmup()
     for b in existing:
-        if b.start_time <= end and start <= b.end_time:
+        # if b.start_time <= end and start <= b.end_time:
+        if b.start_time < end and start < b.end_time:         
             return True
     return False
 
@@ -134,9 +135,12 @@ def list_bookings(
     base = db.query(Booking).filter(Booking.user_id == user.id)
     total = base.count()
     items = (
-        base.order_by(Booking.start_time.desc(), Booking.id.asc())
-        .offset(page * limit)
-        .limit(10)
+        # base.order_by(Booking.start_time.desc(), Booking.id.asc())
+        base.order_by(Booking.start_time.asc(), Booking.id.asc())
+        # .offset(page * limit)
+        .offset((page - 1) * limit)
+        #.limit(10)
+        .limit(limit)
         .all()
     )
     return {
@@ -153,12 +157,23 @@ def get_booking(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    booking = (
-        db.query(Booking)
-        .join(Room, Booking.room_id == Room.id)
-        .filter(Booking.id == booking_id, Room.org_id == user.org_id)
-        .first()
+    # booking = (
+    #     db.query(Booking)
+    #     .join(Room, Booking.room_id == Room.id)
+    #     .filter(Booking.id == booking_id, Room.org_id == user.org_id)
+    #     .first()
+    # )
+    query = (
+    db.query(Booking)
+    .join(Room, Booking.room_id == Room.id)
+    .filter(Booking.id == booking_id, Room.org_id == user.org_id)
     )
+
+    if user.role != "admin":
+        query = query.filter(Booking.user_id == user.id)
+
+    booking = query.first()
+    
     if booking is None:
         raise AppError(404, "BOOKING_NOT_FOUND", "Booking not found")
 

@@ -37,6 +37,13 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         .filter(User.org_id == org.id, User.username == payload.username)
         .first()
     )
+    # if existing is not None:
+    #     return {
+    #         "user_id": existing.id,
+    #         "org_id": org.id,
+    #         "username": existing.username,
+    #         "role": existing.role,
+    #     }
     if existing is not None:
         # BUG: was returning existing user silently — spec says 409 USERNAME_TAKEN
         raise AppError(409, "USERNAME_TAKEN", "Username already taken in this organization")
