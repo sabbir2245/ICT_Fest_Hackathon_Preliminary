@@ -8,7 +8,9 @@
 
 `revoke_access_token()` (line 86) stores `payload["jti"]` (unique per-token UUID hex) into `_revoked_tokens`. But `get_token_payload()` (line 97) checks `payload.get("sub")` (the user ID string, e.g. `"1"`). Since a user ID is never in `_revoked_tokens`, no token ever appears revoked — logout is ineffective.
 
-**Fix:** `if payload.get("jti") in _revoked_tokens`
+**Fix:** Changed `payload.get("sub")` → `payload.get("jti")` at line 97.
+
+**Status: FIXED** — `app/auth.py:97`
 
 ---
 
@@ -16,7 +18,9 @@
 
 `POST /auth/refresh` returns a new token pair but does not track or invalidate the presented refresh token. The spec says: *"Refresh tokens are single-use: refreshing returns a new access and refresh token and invalidates the presented refresh token (reuse → 401)."* Reusing a refresh token currently succeeds (observed in test: expected 401, got 200).
 
-**Fix:** Store used refresh-token JTIs and reject on reuse (similar to the access-token revocation set).
+**Fix:** Added `_used_refresh_tokens: set[str]` at line 21. In the `/refresh` handler, the old token's `jti` is checked against this set before issuing new tokens; after a successful refresh the `jti` is added so reuse returns 401.
+
+**Status: FIXED** — `app/routers/auth.py:21,87-90`
 
 ---
 
@@ -52,6 +56,9 @@ else:
     refund_percent = 0
 ```
 And ensure both `log_refund` and the cancel response compute the same amount using the same rounding.
+
+
+issue 4 Resolved . Done . 
 
 ---
 
@@ -111,7 +118,11 @@ lifetime = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES * 60)
 ```
 `ACCESS_TOKEN_EXPIRE_MINUTES = 15` → `timedelta(minutes=900)` = 15 hours. Spec says *"Access tokens expire in exactly 900 seconds"* (15 minutes).
 
-**Fix:** `timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)` (no `* 60`), or change the config constant.
+**Root cause:** `timedelta(minutes=...)` already accepts minutes directly. The extra `* 60` multiplies the 15 minutes into 900 minutes (= 15 hours), making tokens live 60× longer than intended.
+
+**Fix:** Removed `* 60` → `timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)`.
+
+**Status: FIXED** — `app/auth.py:50`
 
 ---
 
