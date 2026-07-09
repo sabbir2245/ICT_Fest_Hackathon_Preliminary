@@ -11,7 +11,8 @@ _counter = {"value": 1000}
 def _format_pause() -> None:
     # The reference code is padded and prefixed for display; the formatting
     # step is kept together with issuance so codes stay sequential.
-    time.sleep(0.12)
+    # time.sleep(0.12)  # BUG: artificial delay widens race window
+    pass
 
 
 def next_reference_code() -> str:

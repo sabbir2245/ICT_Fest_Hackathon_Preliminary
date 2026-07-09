@@ -9,7 +9,8 @@ _stats: dict[int, dict] = {}
 
 
 def _aggregate_pause() -> None:
-    time.sleep(0.1)
+    # time.sleep(0.1)  # BUG: artificial delay widens race window
+    pass
 
 
 def record_create(room_id: int, price_cents: int) -> None:

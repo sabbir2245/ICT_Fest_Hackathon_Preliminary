@@ -1,43 +1,88 @@
+  ICT_Fest_Hackathon_Preliminary git:(sabbir) python3 -u "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py"
+
+============================================================
+  CoWork API — Comprehensive Test Suite
+============================================================
+
+───── Health ─────
+  ✓ === /health ===
+  ✓ /health returns ok
+
+───── Auth ─────
+  ✓ === POST /auth/login (bad password) ===
+  ✗   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
 [FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✗   POST /auth/login: expected 200, got 401: {"detail":"Invalid username or password","code":"INVALID_CREDENTIALS"}
 [FAIL]   POST /auth/login: expected 200, got 401: {"detail":"Invalid username or password","code":"INVALID_CREDENTIALS"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
-[FAIL] revoked token rejected: expected 401, got 200
-[FAIL] Auth.test_logout: revoked token rejected: expected 401, got 200
+  ✓ Bad credentials correctly rejected
+  ✓ === POST /auth/login (valid) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✓ Login successful, tokens received
+  ✓ === POST /auth/logout ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   GET /rooms: expected 200, got 401: {"detail":"Token has been revoked","code":"UNAUTHORIZED"}
+[FAIL]   GET /rooms: expected 200, got 401: {"detail":"Token has been revoked","code":"UNAUTHORIZED"}
+  ✓ Logout invalidates token correctly
+  ✓ === POST /auth/refresh ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✓ Token refresh works
+  ✓ === POST /auth/refresh (reuse → 401) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /auth/refresh: expected 200, got 401: {"detail":"Refresh token has already been used","code":"UNAUTHORIZED"}
+[FAIL]   POST /auth/refresh: expected 200, got 401: {"detail":"Refresh token has already been used","code":"UNAUTHORIZED"}
+  ✓ Reused refresh token correctly rejected (401)
+  ✓ === POST /auth/register (duplicate username) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /auth/register: expected 201, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 201, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✓ note: duplicate username returns the existing user (no 409) — acceptable
+  ✓ === POST /auth/register (existing org → member) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✓ Registered bob as member in acme
+  ✓ === POST /auth/register (new org) ===
+  ✗   POST /auth/register: expected 201, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 201, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗ register status
+       expected 201, got 409
+[FAIL] register status: expected 201, got 409
+[FAIL] Auth.test_register_new_org: register status: expected 201, got 409
 Traceback (most recent call last):
   File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
     getattr(instance, m_name)()
     ~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 201, in test_logout
-    _assert_eq(status2, 401, "revoked token rejected")
-    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 131, in test_register_new_org
+    _assert_eq(status, 201, "register status")
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
     assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
            ^^^^^^^^^^^^^^^
-AssertionError: revoked token rejected: expected 401, got 200
+AssertionError: register status: expected 201, got 409
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
-[FAIL] reused refresh should be 401: expected 401, got 200
-[FAIL] Auth.test_refresh_reuse: reused refresh should be 401: expected 401, got 200
-Traceback (most recent call last):
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
-    getattr(instance, m_name)()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 188, in test_refresh_reuse
-    _assert_eq(status, 401, "reused refresh should be 401")
-    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
-    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
-           ^^^^^^^^^^^^^^^
-AssertionError: reused refresh should be 401: expected 401, got 200
 
+───── Rooms ─────
+  ✓ === GET /rooms/{id}/availability ===
+  ✗   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
 [FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✗   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:246: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  today = datetime.utcnow().strftime("%Y-%m-%d")
+  ✓ Availability endpoint works
+  ✓ === POST /rooms (admin) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✓ Room created: id=2 name=Conference A
+  ✓ === GET /rooms (empty) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗ empty rooms list
+       expected [], got [{'id': 1, 'org_id': 1, 'name': 'R1', 'capacity': 5, 'hourly_rate_cents': 1000}, {'id': 2, 'org_id': 1, 'name': 'Conference A', 'capacity': 10, 'hourly_rate_cents': 1500}]
 [FAIL] empty rooms list: expected [], got [{'id': 1, 'org_id': 1, 'name': 'R1', 'capacity': 5, 'hourly_rate_cents': 1000}, {'id': 2, 'org_id': 1, 'name': 'Conference A', 'capacity': 10, 'hourly_rate_cents': 1500}]
 [FAIL] Rooms.test_list_rooms_empty: empty rooms list: expected [], got [{'id': 1, 'org_id': 1, 'name': 'R1', 'capacity': 5, 'hourly_rate_cents': 1000}, {'id': 2, 'org_id': 1, 'name': 'Conference A', 'capacity': 10, 'hourly_rate_cents': 1500}]
 Traceback (most recent call last):
@@ -50,19 +95,47 @@ Traceback (most recent call last):
   File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
     assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
            ^^^^^^^^^^^^^^^
-AssertionError: empty rooms list: expected [], got [{'id': 1, 'org_id': 1, 'name': 'R1', 'capacity': 5, 'hourly_rate_cents': 1000}, {'id': 2, 'org_id': 1, 'name': 'Conference A', 'capacity': 10, 'hourly_rate_cents': 1500}]
+AssertionError: empty rooms list: expected [], got [{'id': 1, 'org_id': 1, 'name': 'R1', 'capacity': 5, 'hourly_rate_cents': 1000}, {'id': 2, 'org_id': 1, 'name': 'Conference A', 'capacity':10, 'hourly_rate_cents': 1500}]
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === GET /rooms/{id} (cross-org → 404) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":3,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":3,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+  ✗   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":2,"username":"bob","role":"admin"}
 [FAIL]   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":2,"username":"bob","role":"admin"}
+  ✗   GET /rooms/1: expected 200, got 404: {"detail":"Not Found"}
 [FAIL]   GET /rooms/1: expected 200, got 404: {"detail":"Not Found"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ cross-org room access: 404
+  ✓ === GET /rooms/{id}/stats (zero bookings) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":4,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":4,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+  ✓ Stats shows zero as expected
+
+───── Bookings ─────
+  ✓ === GET /admin/export ===
+  ✗   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
 [FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✗   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:272: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow() + timedelta(hours=hours_ahead)
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:276: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = datetime.utcnow() + timedelta(hours=start_hours_ahead + dur)
+  ✓ Export CSV generated, length=158 chars
+  ✓ === GET /admin/usage-report ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":2,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":2,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:523: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  today = datetime.utcnow().strftime("%Y-%m-%d")
+  ✗ 1 room in report
+       expected 1, got 2
 [FAIL] 1 room in report: expected 1, got 2
 [FAIL] Bookings.test_admin_usage_report: 1 room in report: expected 1, got 2
 Traceback (most recent call last):
@@ -77,35 +150,54 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^
 AssertionError: 1 room in report: expected 1, got 2
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === Back-to-back bookings allowed ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":3,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":3,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
-[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
-[FAIL] back-to-back allowed: expected 201, got 409
-[FAIL] Bookings.test_back_to_back_allowed: back-to-back allowed: expected 201, got 409
-Traceback (most recent call last):
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
-    getattr(instance, m_name)()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 360, in test_back_to_back_allowed
-    _assert_eq(status, 201, "back-to-back allowed")
-    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
-    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
-           ^^^^^^^^^^^^^^^
-AssertionError: back-to-back allowed: expected 201, got 409
-
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:350: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  dt1 = datetime.utcnow() + timedelta(hours=10)
+  ✓ First booking: id=2
+  ✓ Back-to-back bookings correctly allowed
+  ✓ === Booking > 8h → 400 ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":4,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":4,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 200, got 400: {"detail":"duration out of range","code":"INVALID_BOOKING_WINDOW"}
 [FAIL]   POST /bookings: expected 200, got 400: {"detail":"duration out of range","code":"INVALID_BOOKING_WINDOW"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ Over-max duration correctly rejected
+  ✓ === Booking non-whole hours → 400 ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":5,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":5,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:305: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  end_dt = datetime.utcnow() + timedelta(hours=2, minutes=30)
+  ✗   POST /bookings: expected 200, got 400: {"detail":"duration must be a whole number of hours","code":"INVALID_BOOKING_WINDOW"}
 [FAIL]   POST /bookings: expected 200, got 400: {"detail":"duration must be a whole number of hours","code":"INVALID_BOOKING_WINDOW"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ Non-whole hour booking correctly rejected
+  ✓ === Booking past start → 400 ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":6,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":6,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:315: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  past = (datetime.utcnow() - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:316: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  future = (datetime.utcnow() + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+  ✗   POST /bookings: expected 200, got 400: {"detail":"start_time must be in the future","code":"INVALID_BOOKING_WINDOW"}
 [FAIL]   POST /bookings: expected 200, got 400: {"detail":"start_time must be in the future","code":"INVALID_BOOKING_WINDOW"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ Past start correctly rejected
+  ✓ === Booking price correctness ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":7,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":7,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+  ✗ 3h * 2000 = 6000
+       expected 6000, got None
 [FAIL] 3h * 2000 = 6000: expected 6000, got None
 [FAIL] Bookings.test_booking_price: 3h * 2000 = 6000: expected 6000, got None
 Traceback (most recent call last):
@@ -120,25 +212,22 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^
 AssertionError: 3h * 2000 = 6000: expected 6000, got None
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === Booking visibility: member can't see others' bookings ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":8,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":8,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+  ✗   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":1,"username":"bob","role":"member"}
 [FAIL]   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":1,"username":"bob","role":"member"}
-[FAIL] member should not see other's booking: expected 404, got 200
-[FAIL] Bookings.test_booking_visibility_member: member should not see other's booking: expected 404, got 200
-Traceback (most recent call last):
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
-    getattr(instance, m_name)()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 483, in test_booking_visibility_member
-    _assert_eq(status, 404, "member should not see other's booking")
-    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
-    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
-           ^^^^^^^^^^^^^^^
-AssertionError: member should not see other's booking: expected 404, got 200
-
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✗   GET /bookings/4: expected 200, got 404: {"detail":"Booking not found","code":"BOOKING_NOT_FOUND"}
+[FAIL]   GET /bookings/4: expected 200, got 404: {"detail":"Booking not found","code":"BOOKING_NOT_FOUND"}
+  ✓ Member correctly gets 404 for another member's booking
+  ✓ === Cancel already cancelled → 409 ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":9,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":9,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [ERROR] Bookings.test_cancel_already_cancelled: 'id'
 Traceback (most recent call last):
@@ -150,8 +239,12 @@ Traceback (most recent call last):
                               ~~~~~~~^^^^^^
 KeyError: 'id'
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === POST /bookings/{id}/cancel ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":10,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":10,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [ERROR] Bookings.test_cancel_booking: 'id'
 Traceback (most recent call last):
@@ -163,10 +256,15 @@ Traceback (most recent call last):
                                              ~~~~~~~^^^^^^
 KeyError: 'id'
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === Cancel: non-owner member → 404 ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":11,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":11,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":1000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":1,"username":"bob","role":"member"}
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
 [ERROR] Bookings.test_cancel_only_owner_or_admin: 'id'
 Traceback (most recent call last):
   File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
@@ -177,10 +275,29 @@ Traceback (most recent call last):
                                           ~~~~~~~^^^^^^
 KeyError: 'id'
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === Cancel refund: < 24h notice → 0% ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":12,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":12,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+[ERROR] Bookings.test_cancel_refund_0pct: 'id'
+Traceback (most recent call last):
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
+    getattr(instance, m_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 469, in test_cancel_refund_0pct
+    _, data = _req("POST", f"/bookings/{created['id']}/cancel", token=token)
+                                        ~~~~~~~^^^^^^
+KeyError: 'id'
+
+  ✓ === Cancel refund: ≥ 48h notice → 100% ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":13,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":13,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [ERROR] Bookings.test_cancel_refund_100pct: 'id'
 Traceback (most recent call last):
@@ -192,11 +309,21 @@ Traceback (most recent call last):
                                         ~~~~~~~^^^^^^
 KeyError: 'id'
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === Cancel refund: 24-48h notice → 50% ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":14,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":14,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ 50% refund: 2000 cents
+  ✓ === POST /bookings (create) ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":15,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":15,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+  ✗ create booking status
+       expected 201, got 409
 [FAIL] create booking status: expected 201, got 409
 [FAIL] Bookings.test_create_booking: create booking status: expected 201, got 409
 Traceback (most recent call last):
@@ -211,8 +338,12 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^
 AssertionError: create booking status: expected 201, got 409
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === GET /bookings/{id} ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":16,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":16,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
 [ERROR] Bookings.test_get_booking: 'id'
 Traceback (most recent call last):
@@ -224,32 +355,41 @@ Traceback (most recent call last):
                                             ~~~~~~~^^^^^^
 KeyError: 'id'
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === GET /bookings pagination ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":17,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":17,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Booking quota exceeded","code":"QUOTA_EXCEEDED"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Booking quota exceeded","code":"QUOTA_EXCEEDED"}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Booking quota exceeded","code":"QUOTA_EXCEEDED"}
 [FAIL]   POST /bookings: expected 201, got 409: {"detail":"Booking quota exceeded","code":"QUOTA_EXCEEDED"}
+  ✗   POST /bookings: expected 201, got 409: {"detail":"Booking quota exceeded","code":"QUOTA_EXCEEDED"}
+[FAIL]   POST /bookings: expected 201, got 409: {"detail":"Booking quota exceeded","code":"QUOTA_EXCEEDED"}
+  ✗   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+  ✗   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
-[FAIL] total should be 5: expected 5, got 6
-[FAIL] Bookings.test_list_bookings_pagination: total should be 5: expected 5, got 6
-Traceback (most recent call last):
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 623, in _run_all
-    getattr(instance, m_name)()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 392, in test_list_bookings_pagination
-    _assert_eq(data["total"], n_bookings, f"total should be {n_bookings}")
-    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py", line 100, in _assert_eq
-    assert got == expected, f"{label}: expected {expected!r}, got {got!r}"
-           ^^^^^^^^^^^^^^^
-AssertionError: total should be 5: expected 5, got 6
-
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ Pagination: page=1, limit=3, total=5, items=3
+  ✓ Page 2 has 2 items
+  ✓ === Booking quota (max 3 in 24h) → 409 ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":18,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":18,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+  ✓   booking 1: id=None
+  ✗   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+  ✓   booking 2: id=None
+  ✗   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+  ✓   booking 3: id=None
+  ✗   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+  ✗ quota exceeded should 409
+       expected 409, got 429
 [FAIL] quota exceeded should 409: expected 409, got 429
 [FAIL] Bookings.test_quota_exceeded: quota exceeded should 409: expected 409, got 429
 Traceback (most recent call last):
@@ -264,31 +404,61 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^
 AssertionError: quota exceeded should 409: expected 409, got 429
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === Rate limiting: 20 req / 60s ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":19,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":19,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":7,"reference_code":"CW-001006","room_id":1,"user_id":1,"start_time":"2026-07-11T12:45:50+00:00","end_time":"2026-07-11T13:45:50+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:50.968355+00:00"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":8,"reference_code":"CW-001007","room_id":1,"user_id":1,"start_time":"2026-07-11T13:45:51+00:00","end_time":"2026-07-11T14:45:51+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:51.641888+00:00"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":9,"reference_code":"CW-001008","room_id":1,"user_id":1,"start_time":"2026-07-11T14:45:52+00:00","end_time":"2026-07-11T15:45:52+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:52.315689+00:00"}
-[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":10,"reference_code":"CW-001009","room_id":1,"user_id":1,"start_time":"2026-07-11T16:45:53+00:00","end_time":"2026-07-11T17:45:53+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:53.215153+00:00"}
-[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":11,"reference_code":"CW-001010","room_id":1,"user_id":1,"start_time":"2026-07-11T18:45:54+00:00","end_time":"2026-07-11T19:45:54+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:54.113740+00:00"}
-[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":12,"reference_code":"CW-001011","room_id":1,"user_id":1,"start_time":"2026-07-11T20:45:54+00:00","end_time":"2026-07-11T21:45:54+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:55.013920+00:00"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":13,"reference_code":"CW-001012","room_id":1,"user_id":1,"start_time":"2026-07-11T21:45:55+00:00","end_time":"2026-07-11T22:45:55+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:55.688900+00:00"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":14,"reference_code":"CW-001013","room_id":1,"user_id":1,"start_time":"2026-07-11T22:45:56+00:00","end_time":"2026-07-11T23:45:56+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:56.363184+00:00"}
-[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":15,"reference_code":"CW-001014","room_id":1,"user_id":1,"start_time":"2026-07-12T00:45:57+00:00","end_time":"2026-07-12T01:45:57+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:57.262363+00:00"}
-[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":16,"reference_code":"CW-001015","room_id":1,"user_id":1,"start_time":"2026-07-12T02:45:58+00:00","end_time":"2026-07-12T03:45:58+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:58.161332+00:00"}
-[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":17,"reference_code":"CW-001016","room_id":1,"user_id":1,"start_time":"2026-07-12T04:45:58+00:00","end_time":"2026-07-12T05:45:58+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:59.059729+00:00"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":18,"reference_code":"CW-001017","room_id":1,"user_id":1,"start_time":"2026-07-12T05:45:59+00:00","end_time":"2026-07-12T06:45:59+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:45:59.733855+00:00"}
-[FAIL]   POST /bookings: expected 200, got 201: {"id":19,"reference_code":"CW-001018","room_id":1,"user_id":1,"start_time":"2026-07-12T06:46:00+00:00","end_time":"2026-07-12T07:46:00+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T12:46:00.407949+00:00"}
-[FAIL]   POST /bookings: expected 200, got 409: {"detail":"Room already booked for this interval","code":"ROOM_CONFLICT"}
+  ✗   POST /bookings: expected 200, got 201: {"id":6,"reference_code":"CW-001005","room_id":1,"user_id":1,"start_time":"2026-07-11T13:55:41+00:00","end_time":"2026-07-11T14:55:41+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:41.172190+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":6,"reference_code":"CW-001005","room_id":1,"user_id":1,"start_time":"2026-07-11T13:55:41+00:00","end_time":"2026-07-11T14:55:41+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:41.172190+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":7,"reference_code":"CW-001006","room_id":1,"user_id":1,"start_time":"2026-07-11T14:55:41+00:00","end_time":"2026-07-11T15:55:41+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:41.884079+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":7,"reference_code":"CW-001006","room_id":1,"user_id":1,"start_time":"2026-07-11T14:55:41+00:00","end_time":"2026-07-11T15:55:41+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:41.884079+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":8,"reference_code":"CW-001007","room_id":1,"user_id":1,"start_time":"2026-07-11T15:55:42+00:00","end_time":"2026-07-11T16:55:42+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:42.568868+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":8,"reference_code":"CW-001007","room_id":1,"user_id":1,"start_time":"2026-07-11T15:55:42+00:00","end_time":"2026-07-11T16:55:42+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:42.568868+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":9,"reference_code":"CW-001008","room_id":1,"user_id":1,"start_time":"2026-07-11T16:55:43+00:00","end_time":"2026-07-11T17:55:43+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:43.254494+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":9,"reference_code":"CW-001008","room_id":1,"user_id":1,"start_time":"2026-07-11T16:55:43+00:00","end_time":"2026-07-11T17:55:43+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:43.254494+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":10,"reference_code":"CW-001009","room_id":1,"user_id":1,"start_time":"2026-07-11T17:55:43+00:00","end_time":"2026-07-11T18:55:43+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:43.936655+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":10,"reference_code":"CW-001009","room_id":1,"user_id":1,"start_time":"2026-07-11T17:55:43+00:00","end_time":"2026-07-11T18:55:43+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:43.936655+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":11,"reference_code":"CW-001010","room_id":1,"user_id":1,"start_time":"2026-07-11T18:55:44+00:00","end_time":"2026-07-11T19:55:44+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:44.628348+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":11,"reference_code":"CW-001010","room_id":1,"user_id":1,"start_time":"2026-07-11T18:55:44+00:00","end_time":"2026-07-11T19:55:44+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:44.628348+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":12,"reference_code":"CW-001011","room_id":1,"user_id":1,"start_time":"2026-07-11T19:55:45+00:00","end_time":"2026-07-11T20:55:45+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:45.304894+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":12,"reference_code":"CW-001011","room_id":1,"user_id":1,"start_time":"2026-07-11T19:55:45+00:00","end_time":"2026-07-11T20:55:45+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:45.304894+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":13,"reference_code":"CW-001012","room_id":1,"user_id":1,"start_time":"2026-07-11T20:55:45+00:00","end_time":"2026-07-11T21:55:45+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:45.981372+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":13,"reference_code":"CW-001012","room_id":1,"user_id":1,"start_time":"2026-07-11T20:55:45+00:00","end_time":"2026-07-11T21:55:45+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:45.981372+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":14,"reference_code":"CW-001013","room_id":1,"user_id":1,"start_time":"2026-07-11T21:55:46+00:00","end_time":"2026-07-11T22:55:46+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:46.677284+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":14,"reference_code":"CW-001013","room_id":1,"user_id":1,"start_time":"2026-07-11T21:55:46+00:00","end_time":"2026-07-11T22:55:46+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:46.677284+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":15,"reference_code":"CW-001014","room_id":1,"user_id":1,"start_time":"2026-07-11T22:55:47+00:00","end_time":"2026-07-11T23:55:47+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:47.361793+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":15,"reference_code":"CW-001014","room_id":1,"user_id":1,"start_time":"2026-07-11T22:55:47+00:00","end_time":"2026-07-11T23:55:47+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:47.361793+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":16,"reference_code":"CW-001015","room_id":1,"user_id":1,"start_time":"2026-07-11T23:55:47+00:00","end_time":"2026-07-12T00:55:47+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:48.049084+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":16,"reference_code":"CW-001015","room_id":1,"user_id":1,"start_time":"2026-07-11T23:55:47+00:00","end_time":"2026-07-12T00:55:47+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:48.049084+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":17,"reference_code":"CW-001016","room_id":1,"user_id":1,"start_time":"2026-07-12T00:55:48+00:00","end_time":"2026-07-12T01:55:48+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:48.736735+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":17,"reference_code":"CW-001016","room_id":1,"user_id":1,"start_time":"2026-07-12T00:55:48+00:00","end_time":"2026-07-12T01:55:48+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:48.736735+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":18,"reference_code":"CW-001017","room_id":1,"user_id":1,"start_time":"2026-07-12T01:55:49+00:00","end_time":"2026-07-12T02:55:49+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:49.427162+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":18,"reference_code":"CW-001017","room_id":1,"user_id":1,"start_time":"2026-07-12T01:55:49+00:00","end_time":"2026-07-12T02:55:49+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:49.427162+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":19,"reference_code":"CW-001018","room_id":1,"user_id":1,"start_time":"2026-07-12T02:55:50+00:00","end_time":"2026-07-12T03:55:50+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:50.113070+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":19,"reference_code":"CW-001018","room_id":1,"user_id":1,"start_time":"2026-07-12T02:55:50+00:00","end_time":"2026-07-12T03:55:50+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:50.113070+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":20,"reference_code":"CW-001019","room_id":1,"user_id":1,"start_time":"2026-07-12T03:55:50+00:00","end_time":"2026-07-12T04:55:50+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:50.792683+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":20,"reference_code":"CW-001019","room_id":1,"user_id":1,"start_time":"2026-07-12T03:55:50+00:00","end_time":"2026-07-12T04:55:50+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:50.792683+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":21,"reference_code":"CW-001020","room_id":1,"user_id":1,"start_time":"2026-07-12T04:55:51+00:00","end_time":"2026-07-12T05:55:51+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:51.471789+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":21,"reference_code":"CW-001020","room_id":1,"user_id":1,"start_time":"2026-07-12T04:55:51+00:00","end_time":"2026-07-12T05:55:51+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:51.471789+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":22,"reference_code":"CW-001021","room_id":1,"user_id":1,"start_time":"2026-07-12T05:55:52+00:00","end_time":"2026-07-12T06:55:52+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:52.171729+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":22,"reference_code":"CW-001021","room_id":1,"user_id":1,"start_time":"2026-07-12T05:55:52+00:00","end_time":"2026-07-12T06:55:52+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:52.171729+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":23,"reference_code":"CW-001022","room_id":1,"user_id":1,"start_time":"2026-07-12T06:55:52+00:00","end_time":"2026-07-12T07:55:52+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:52.849931+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":23,"reference_code":"CW-001022","room_id":1,"user_id":1,"start_time":"2026-07-12T06:55:52+00:00","end_time":"2026-07-12T07:55:52+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:52.849931+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":24,"reference_code":"CW-001023","room_id":1,"user_id":1,"start_time":"2026-07-12T07:55:53+00:00","end_time":"2026-07-12T08:55:53+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:53.540812+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":24,"reference_code":"CW-001023","room_id":1,"user_id":1,"start_time":"2026-07-12T07:55:53+00:00","end_time":"2026-07-12T08:55:53+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:53.540812+00:00"}
+  ✗   POST /bookings: expected 200, got 201: {"id":25,"reference_code":"CW-001024","room_id":1,"user_id":1,"start_time":"2026-07-12T08:55:54+00:00","end_time":"2026-07-12T09:55:54+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:54.234415+00:00"}
+[FAIL]   POST /bookings: expected 200, got 201: {"id":25,"reference_code":"CW-001024","room_id":1,"user_id":1,"start_time":"2026-07-12T08:55:54+00:00","end_time":"2026-07-12T09:55:54+00:00","status":"confirmed","price_cents":2000,"created_at":"2026-07-09T13:55:54.234415+00:00"}
+  ✗   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ Rate limited at request 21
+  ✓ Rate limiting works correctly
+  ✓ === Reference code uniqueness ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":20,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":20,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [ERROR] Bookings.test_reference_code_unique: 'reference_code'
 Traceback (most recent call last):
@@ -300,10 +470,18 @@ Traceback (most recent call last):
               ~~~~^^^^^^^^^^^^^^^^^^
 KeyError: 'reference_code'
 
-[FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✓ === Double-booking conflict → 409 ===
+  ✗   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+[FAIL]   POST /auth/register: expected 200, got 409: {"detail":"Username already taken in this organization","code":"USERNAME_TAKEN"}
+  ✗   POST /rooms: expected 200, got 201: {"id":21,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":21,"org_id":1,"name":"R1","capacity":5,"hourly_rate_cents":2000}
+  ✗   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 201, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+  ✓ First booking: id=None
+  ✗   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
 [FAIL]   POST /bookings: expected 200, got 429: {"detail":"Too many booking requests","code":"RATE_LIMITED"}
+  ✗ conflict should 409
+       expected 409, got 429
 [FAIL] conflict should 409: expected 409, got 429
 [FAIL] Bookings.test_room_conflict: conflict should 409: expected 409, got 429
 Traceback (most recent call last):
@@ -318,9 +496,20 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^
 AssertionError: conflict should 409: expected 409, got 429
 
+
+───── Concurrency ─────
+  ✓ === Concurrent booking conflict (room 1, same slot) ===
+  ✗   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
 [FAIL]   POST /auth/register: expected 200, got 201: {"user_id":1,"org_id":1,"username":"alice","role":"admin"}
+  ✗   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":1,"username":"bob","role":"member"}
 [FAIL]   POST /auth/register: expected 200, got 201: {"user_id":2,"org_id":1,"username":"bob","role":"member"}
+  ✗   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":10,"hourly_rate_cents":1000}
 [FAIL]   POST /rooms: expected 200, got 201: {"id":1,"org_id":1,"name":"R1","capacity":10,"hourly_rate_cents":1000}
+/home/s/project/hackathon26/ICT_Fest_Hackathon_Preliminary/app/alltest.py:564: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Usetimezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  start_dt = datetime.utcnow() + timedelta(hours=2)
+  ✓ Concurrent create: 10 success, 0 conflict out of 10
+  ✗ only 1 booking should succeed for same slot
+       expected 1, got 10
 [FAIL] only 1 booking should succeed for same slot: expected 1, got 10
 [FAIL] Concurrency.test_concurrent_booking_conflict: only 1 booking should succeed for same slot: expected 1, got 10
 Traceback (most recent call last):
@@ -335,3 +524,8 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^
 AssertionError: only 1 booking should succeed for same slot: expected 1, got 10
 
+
+============================================================
+  All tests completed.
+============================================================
+➜  ICT_Fest_Hackathon_Preliminary git:(sabbir) ✗ 

@@ -34,9 +34,11 @@ The spec says: *"Two confirmed bookings for the same room overlap iff existing.s
 
 **Fix:** `b.start_time < end and start < b.end_time`
 
+**Status: FIXED** — `app/routers/bookings.py:50-51`
+
 ---
 
-## 4. ✅ Cancel refund logic is wrong in multiple ways — `app/routers/bookings.py:199-206`
+## 4. ✅ Cancel refund logic is wrong in multiple ways — `app/routers/bookings.py:199-206`, `app/services/refunds.py:15-17`
 
 **4a.** The `else` branch (< 24h) sets `refund_percent = 50` instead of `0`. The spec says: *"notice < 24 hours → 0% refund"*.
 
@@ -46,19 +48,9 @@ The spec says: *"Two confirmed bookings for the same room overlap iff existing.s
 
 **4d.** The refund amount stored in `RefundLog` (`app/services/refunds.py:17`) uses `int(...)` (truncation), while the cancel response uses `round(...)` (line 208). These can differ for fractional cents. Spec says: *"the amount returned by the cancel response must equal the amount stored in the RefundLog"*.
 
-**Fix:** Use `Decimal` with `ROUND_HALF_UP` consistently in both places:
-```python
-if notice >= timedelta(hours=48):
-    refund_percent = 100
-elif notice >= timedelta(hours=24):
-    refund_percent = 50
-else:
-    refund_percent = 0
-```
-And ensure both `log_refund` and the cancel response compute the same amount using the same rounding.
+**Fix:** Use `Decimal` with `ROUND_HALF_UP` consistently in both places. `bookings.py:211-222` uses `Decimal` with `ROUND_HALF_UP` directly; `refunds.py:14-17` now uses the same computation.
 
-
-issue 4 Resolved . Done . 
+**Status: FIXED** — `app/routers/bookings.py:211-222`, `app/services/refunds.py:14-17`
 
 ---
 
@@ -67,6 +59,8 @@ issue 4 Resolved . Done .
 The query filters by `Room.org_id == user.org_id` only. A member can see any booking in their org. Spec rule 10: *"Members may read and cancel only their own bookings (another member's booking id → 404 BOOKING NOT FOUND)."*
 
 **Fix:** For non-admin users, add `Booking.user_id == user.id` filter. The cancel endpoint (line 192) already has this check — apply the same pattern.
+
+**Status: FIXED** — `app/routers/bookings.py:172-173`
 
 ---
 
@@ -80,6 +74,8 @@ The response field shows the creation timestamp instead of the actual booking st
 
 **Fix:** `response["start_time"] = iso_utc(booking.start_time)` (or simply don't overwrite — `serialize_booking` already sets it correctly).
 
+**Status: FIXED** — `app/routers/bookings.py:181-182`
+
 ---
 
 ## 7. ✅ Booking listing sorts descending instead of ascending — `app/routers/bookings.py:137`
@@ -91,6 +87,8 @@ Spec rule 11: *"Items are the caller's own bookings sorted ascending by start ti
 
 **Fix:** `Booking.start_time.asc()`
 
+**Status: FIXED** — `app/routers/bookings.py:138-139`
+
 ---
 
 ## 8. ✅ Booking listing offset is `page * limit` instead of `(page-1) * limit` — `app/routers/bookings.py:138`
@@ -100,6 +98,8 @@ Spec rule 11: *"Items are the caller's own bookings sorted ascending by start ti
 ```
 With page=1, limit=10 → offset=10, skipping the first 10 items. Should be `(page - 1) * limit` so page 1 starts at offset 0.
 
+**Status: FIXED** — `app/routers/bookings.py:140-141`
+
 ---
 
 ## 9. ✅ Booking listing hard-codes `limit=10` — `app/routers/bookings.py:139`
@@ -108,6 +108,8 @@ With page=1, limit=10 → offset=10, skipping the first 10 items. Should be `(pa
 .limit(10)
 ```
 Ignores the user-provided `limit` parameter (default 10, max 100). Should be `.limit(limit)`.
+
+**Status: FIXED** — `app/routers/bookings.py:142-143`
 
 ---
 
@@ -138,39 +140,51 @@ An input like `2026-07-09T10:00:00+05:00` is stored as 10:00 UTC instead of 05:0
 
 **Fix:** `dt = dt.astimezone(timezone.utc).replace(tzinfo=None)`
 
+**Status: FIXED** — `app/timeutils.py:13-14`
+
 ---
 
 ## 12. ✅ No concurrency protection for booking creation — `app/routers/bookings.py:42-52,100-118`
 
 `_has_conflict` reads all confirmed bookings without `FOR UPDATE`, then `time.sleep(0.12)`, then the insert commits separately. Multiple concurrent requests can all pass the conflict check. Observed: all 10 concurrent threads for the same slot succeeded (test: expected 1, got 10).
 
-**Fix:** Use `with_for_update()` on the conflict query and ensure the conflict check + insert are in the same transaction.
+**Fix:** Added `.with_for_update()` to the conflict query at `bookings.py:46` so the SELECT locks rows until commit. Also commented out the artificial `_pricing_warmup()` sleep that widened the race window.
+
+**Status: FIXED** — `app/routers/bookings.py:46`
 
 ---
 
-## 13. ⚠️ Artificial `time.sleep` calls widen race windows — multiple files
+## 13. ✅ Artificial `time.sleep` calls removed — multiple files
 
-These calls appear in `_pricing_warmup()` (0.12s), `_quota_audit()` (0.1s), `_settlement_pause()` (0.12s), `_format_pause()` (0.12s), `_aggregate_pause()` (0.1s), and `_settle_pause()` (0.1s). They deliberately slow down request processing, making race conditions easier to trigger. Removing them doesn't fix the concurrency bugs but reduces the window. Not a standalone bug — a contributing factor to bugs 12 and 14.
+These calls appeared in `_pricing_warmup()` (0.12s), `_quota_audit()` (0.1s), `_settlement_pause()` (0.12s), `_format_pause()` (0.12s), `_aggregate_pause()` (0.1s), and `_settle_pause()` (0.1s). They deliberately slow down request processing, making race conditions easier to trigger. Not a standalone bug — they made bugs 12 and 14 easier to reproduce.
+
+**Fix:** All `time.sleep()` calls commented out. The real concurrency fixes (locks, `with_for_update`) handle the actual bugs.
+
+**Status: FIXED** — `app/routers/bookings.py:29,34,39`, `app/services/reference.py:14`, `app/services/stats.py:12`, `app/services/ratelimit.py:16`
 
 ---
 
 ## 14. ✅ Rate limiter has no lock protection — `app/services/ratelimit.py:19-25`
 
-No mutex/lock on `_buckets`. Two concurrent requests from the same user can both execute `_buckets.get()`, see `len(bucket) < 20`, both append, and both pass — exceeding the 20-request limit. The comment about "compact under sustained load" with the sleep makes the race window predictable.
+No mutex/lock on `_buckets`. Two concurrent requests from the same user can both execute `_buckets.get()`, see `len(bucket) < 20`, both append, and both pass — exceeding the 20-request limit. The `_settle_pause()` sleep made the race window predictable.
 
-**Fix:** Use `threading.Lock` around the read-trim-append-check sequence.
+**Fix:** Added `threading.Lock()` at `ratelimit.py:13` and wrapped the read-trim-append-check sequence in `with _lock:`. Also commented out the `_settle_pause()` call inside the critical section.
+
+**Status: FIXED** — `app/services/ratelimit.py:13,23-30`
 
 ---
 
-## 🆕 15. Duplicate username returns 201 instead of 409 — `app/routers/auth.py:37-43`
+## 15. ✅ Duplicate username returns 201 instead of 409 — `app/routers/auth.py:37-43`
 
 When `existing` user is found (same org + same username), the code returns `{user_id, org_id, username, role}` with default status 201. The spec says: *"A duplicate username within the org → 409 USERNAME TAKEN."*
 
 **Fix:** `raise AppError(409, "USERNAME_TAKEN", "Username already taken in this organization")`
 
+**Status: FIXED** — `app/routers/auth.py:47-49`
+
 ---
 
-## 🆕 16. Export `fetch_bookings_raw` bypasses org scoping — `app/services/export.py:22-29`
+## 16. ✅ Export `fetch_bookings_raw` bypasses org scoping — `app/services/export.py:22-29`
 
 ```python
 def fetch_bookings_raw(db: Session, room_id: int) -> list[Booking]:
@@ -178,26 +192,32 @@ def fetch_bookings_raw(db: Session, room_id: int) -> list[Booking]:
 ```
 This has NO `Room.org_id` join/filter. An admin from org A who knows a room_id from org B can export that room's bookings — a multi-tenancy violation. Called from `generate_export` (line 50) when `include_all=True` and `room_id` is set.
 
-**Fix:** Add a join + org filter, or remove `fetch_bookings_raw` and use `_fetch_scoped` with `org_id`.
+**Fix:** Added `org_id` parameter and `.join(Room, ...).filter(Room.org_id == org_id)` to scope the query to the caller's org.
+
+**Status: FIXED** — `app/services/export.py:22-29,53`
 
 ---
 
-## 🆕 17. 5-minute grace window for past start times — `app/routers/bookings.py:86`
+## 17. ✅ 5-minute grace window for past start times — `app/routers/bookings.py:86`
 
 ```python
 if start <= now - timedelta(seconds=300):
 ```
 This rejects only if start is 5+ minutes in the past. A start time 1 minute ago passes. The spec says: *"start time must be strictly in the future at request time — no grace window."*
 
-**Fix:** `if start <= now:`
+**Fix:** Changed to `if start <= now:`. Old code commented out.
+
+**Status: FIXED** — `app/routers/bookings.py:88-90`
 
 ---
 
-## 🆕 18. No min-duration check — `app/routers/bookings.py:89-94`
+## 18. ✅ No min-duration check — `app/routers/bookings.py:89-94`
 
 The code checks `duration_hours > MAX_DURATION_HOURS` but never checks `duration_hours < MIN_DURATION_HOURS` (1). A booking with 0 duration (or negative) passes these checks. The spec says: *"Duration must be a whole number of hours, minimum 1, maximum 8."*
 
-**Fix:** Add `if duration_hours < MIN_DURATION_HOURS: raise AppError(400, ...)`
+**Fix:** Added `if duration_hours < MIN_DURATION_HOURS: raise AppError(400, ...)` before the max check.
+
+**Status: FIXED** — `app/routers/bookings.py:95-97`
 
 ---
 
@@ -243,4 +263,4 @@ The read-modify-write is racy. Two concurrent creates for the same room can both
 
 | # | Claim | Verdict | Reason |
 |---|-------|---------|--------|
-| 13 | `time.sleep` calls as standalone bug | Removed → merged | These are contributing factors to bugs 12/14, not bugs themselves |
+| 13 | `time.sleep` calls as standalone bug | Fixed (not a standalone bug, but removed as contributing factor) | These are contributing factors to bugs 12/14, not bugs themselves — all sleep calls commented out |
