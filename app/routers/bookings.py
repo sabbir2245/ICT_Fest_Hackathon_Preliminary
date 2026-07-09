@@ -1,7 +1,7 @@
 """Booking creation, listing, detail and cancellation."""
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -20,6 +20,7 @@ from ..timeutils import iso_utc, parse_input_datetime
 router = APIRouter(tags=["bookings"])
 
 _create_booking_lock = threading.Lock()
+_cancel_booking_lock = threading.Lock()
 
 MIN_DURATION_HOURS = 1
 MAX_DURATION_HOURS = 8
@@ -89,7 +90,7 @@ def create_booking(
     with _create_booking_lock:
         start = parse_input_datetime(payload.start_time)
         end = parse_input_datetime(payload.end_time)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         # if start <= now - timedelta(seconds=300):  # BUG: 5-min grace window
         #     raise AppError(400, "INVALID_BOOKING_WINDOW", "start_time must be in the future")
@@ -208,50 +209,51 @@ def cancel_booking(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    booking = (
-        db.query(Booking)
-        .join(Room, Booking.room_id == Room.id)
-        .filter(Booking.id == booking_id, Room.org_id == user.org_id)
-        .first()
-    )
-    if booking is None:
-        raise AppError(404, "BOOKING_NOT_FOUND", "Booking not found")
-    if user.role != "admin" and booking.user_id != user.id:
-        raise AppError(404, "BOOKING_NOT_FOUND", "Booking not found")
+    with _cancel_booking_lock:
+        booking = (
+            db.query(Booking)
+            .join(Room, Booking.room_id == Room.id)
+            .filter(Booking.id == booking_id, Room.org_id == user.org_id)
+            .first()
+        )
+        if booking is None:
+            raise AppError(404, "BOOKING_NOT_FOUND", "Booking not found")
+        if user.role != "admin" and booking.user_id != user.id:
+            raise AppError(404, "BOOKING_NOT_FOUND", "Booking not found")
 
-    if booking.status == "cancelled":
-        raise AppError(409, "ALREADY_CANCELLED", "Booking already cancelled")
+        if booking.status == "cancelled":
+            raise AppError(409, "ALREADY_CANCELLED", "Booking already cancelled")
 
-    now = datetime.utcnow()
-    notice = booking.start_time - now
-    # --- bug  ---
-    # notice_hours = int(notice.total_seconds() // 3600)
-    # if notice_hours > 48:
-    #     refund_percent = 100
-    # elif notice >= timedelta(hours=24):
-    #     refund_percent = 50
-    # else:
-    #     refund_percent = 50
-    # refund_amount_cents = round(booking.price_cents * (refund_percent / 100.0))
-    # --- FIX ---
-    if notice >= timedelta(hours=48):
-        refund_percent = 100
-    elif notice >= timedelta(hours=24):
-        refund_percent = 50
-    else:
-        refund_percent = 0
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        notice = booking.start_time - now
+        # --- bug  ---
+        # notice_hours = int(notice.total_seconds() // 3600)
+        # if notice_hours > 48:
+        #     refund_percent = 100
+        # elif notice >= timedelta(hours=24):
+        #     refund_percent = 50
+        # else:
+        #     refund_percent = 50
+        # refund_amount_cents = round(booking.price_cents * (refund_percent / 100.0))
+        # --- FIX ---
+        if notice >= timedelta(hours=48):
+            refund_percent = 100
+        elif notice >= timedelta(hours=24):
+            refund_percent = 50
+        else:
+            refund_percent = 0
 
-    from decimal import Decimal, ROUND_HALF_UP
-    refund_amount_cents = int(
-        Decimal(str(booking.price_cents * refund_percent / 100))
-        .to_integral_value(rounding=ROUND_HALF_UP)
-    )
+        from decimal import Decimal, ROUND_HALF_UP
+        refund_amount_cents = int(
+            Decimal(str(booking.price_cents * refund_percent / 100))
+            .to_integral_value(rounding=ROUND_HALF_UP)
+        )
 
-    log_refund(db, booking, refund_percent)
+        log_refund(db, booking, refund_percent)
 
-    _settlement_pause()
-    booking.status = "cancelled"
-    db.commit()
+        _settlement_pause()
+        booking.status = "cancelled"
+        db.commit()
 
     stats.record_cancel(booking.room_id, booking.price_cents)
     cache.invalidate_report(user.org_id)

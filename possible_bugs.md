@@ -1,6 +1,5 @@
-# Verified Bugs (cross-checked against source code & PDF spec)
+# Verified Bugs ()
 
-> ✅ = confirmed bug | ❌ = not a bug (removed) | ⚠️ = refined/merged
 
 ---
 
@@ -269,8 +268,23 @@ The read-modify-write is racy. Two concurrent creates for the same room can both
 
 ---
 
-## ❌ Items removed from original list
+## 22. ✅ `datetime.utcnow()` is deprecated — `app/routers/bookings.py:92,225`, `app/services/refunds.py:24`, `app/models.py:33,57,69`
 
-| # | Claim | Verdict | Reason |
-|---|-------|---------|--------|
-| 13 | `time.sleep` calls as standalone bug | Fixed (not a standalone bug, but removed as contributing factor) | These are contributing factors to bugs 12/14, not bugs themselves — all sleep calls commented out |
+`datetime.utcnow()` emits `DeprecationWarning` and is scheduled for removal. All 6 source-level call sites used the deprecated function.
+
+**Fix:** Replaced all with `datetime.now(timezone.utc).replace(tzinfo=None)` (for call sites) or `lambda: datetime.now(timezone.utc).replace(tzinfo=None)` (for SQLAlchemy `Column` defaults).
+
+**Status: FIXED** — `app/routers/bookings.py:92,225`, `app/services/refunds.py:24`, `app/models.py:33,57,69`
+
+---
+
+## 23. ✅ No concurrency protection for booking cancellation — `app/routers/bookings.py:222-254`
+
+The cancel endpoint reads `booking.status`, checks it is not `"cancelled"`, then sets `booking.status = "cancelled"` and commits — all without a lock. Under concurrent threads, N requests all see `"confirmed"`, all pass the check, and all commit, resulting in multiple successful cancels. Observed: 7 out of 10 concurrent cancel threads succeeded (test: expected 1).
+
+**Fix:** Added `_cancel_booking_lock = threading.Lock()` and wrapped the entire booking query → visibility check → status check → refund computation → status update → commit in `with _cancel_booking_lock:`.
+
+**Status: FIXED** — `app/routers/bookings.py:23,212-247`
+
+---
+

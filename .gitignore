@@ -4,3 +4,7 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+alltest*
+allerrlogs*
+errlog*.txt
+

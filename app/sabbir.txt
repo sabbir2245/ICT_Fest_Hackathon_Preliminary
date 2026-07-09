@@ -2,6 +2,6 @@
 thsi is a test fgilele
 
 
-git add . && git commit -m "your commit message" && git push origin sabbir
+git add . && git commit -m "your commit message" && git push origin main
 
 sudo docker compose up --build
